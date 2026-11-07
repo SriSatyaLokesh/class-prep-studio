@@ -46,4 +46,31 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "outputs/quiz.md").write_text("x")
     assert len(run_checks(root)) == 1, run_checks(root)
 
+
+# pdf_text / make_sample_inputs / check_copy
+import subprocess  # noqa: E402
+import make_sample_inputs  # noqa: E402
+from check_copy import overlaps  # noqa: E402
+from pdf_text import page_texts  # noqa: E402
+
+make_sample_inputs.main()  # inputs/*.pdf are git-ignored; no overwrite
+src = "the current through a conductor is directly proportional to the voltage across it at constant temperature"
+assert overlaps(src, "we know " + src) != []
+eleven = " ".join(src.split()[:11])
+assert overlaps(src, eleven + " banana") == []
+assert overlaps("the \ufb01rst connec-\ntion " + src, "the first connection " + src)  # Review Focus 2
+pages = page_texts(Path("inputs/textbook-chapter.pdf"))
+assert len(pages) == 5 and all(p.strip() for p in pages)
+
+from reportlab.pdfgen import canvas  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    blank = Path(tmp) / "blank.pdf"
+    c = canvas.Canvas(str(blank))
+    c.showPage()
+    c.save()
+    script = Path(__file__).resolve().parent / "pdf_text.py"
+    r = subprocess.run([sys.executable, str(script), str(blank)], capture_output=True, text=True)
+    assert r.returncode == 2 and "no text layer" in r.stderr, (r.returncode, r.stderr)  # Review Focus 1
+
 print("ok")
