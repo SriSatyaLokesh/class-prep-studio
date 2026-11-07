@@ -80,4 +80,12 @@ with tempfile.TemporaryDirectory() as tmp:
     r = subprocess.run(cc + [tmp], capture_output=True, text=True)
     assert r.returncode == 0 and r.stdout == "", (r.returncode, r.stdout, r.stderr)
 
+# sync_agents
+from sync_agents import antigravity_text  # noqa: E402
+
+claude = "---\nname: student\ndescription: Asks one question.\ntools: Read, Edit\nmodel: inherit\n---\n# Role\nx\n"
+fm, body = split_frontmatter(antigravity_text(claude))
+assert body == "# Role\nx\n"
+assert fm["tools"] == ["view_file", "replace_file_content"] and fm["subagent"] == "true"
+
 print("ok")
