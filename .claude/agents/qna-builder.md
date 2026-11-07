@@ -48,7 +48,8 @@ Order the entries from most to least important; the notes builder uses the top 5
 - Ask about anything the plan does not cover.
 - Copy textbook text.
 - Write any file other than `outputs/qna.md`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `outputs/qna.md` has 10 to 15 entries, each headed `### Q<n>. <question>`.

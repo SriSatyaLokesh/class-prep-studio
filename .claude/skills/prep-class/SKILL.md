@@ -17,7 +17,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
    | Claude Code | `Agent` tool, `subagent_type` = the agent name. Several calls in one message run in parallel. No worktree isolation. |
    | Antigravity | `invoke_subagent` tool, one entry per subagent in `Subagents`, `TypeName` = the agent name, `Workspace` = `inherit`. Several entries in one call run in parallel. Never use `branch`. |
 
-2. **A subagent prompt states only three things:** the topic, the files to read, and the file to write. Everything else is in the agent file. Example: *Topic: Ohm's law. Read: inputs/textbook-chapter.pdf, brief.md. Write: research/textbook.md.*
+2. **A subagent prompt states only three things:** the topic, the files to read, and the file to write. Everything else is in the agent file. One exception: `web-researcher` also gets a `Today's date:` line (see RESEARCH). Example: *Topic: Ohm's law. Read: inputs/textbook-chapter.pdf, brief.md. Write: research/textbook.md.*
 3. **Agent names (exact):** `textbook-researcher`, `web-researcher`, `syllabus-researcher`, `student`, `expert`, `planner`, `slides-builder`, `qna-builder`, `quiz-builder`, `notes-builder`, `reviewer`.
 4. **Only you write `status.md`.** After each step finishes, change its line from `- [ ] <step>` to `- [x] <step> — <YYYY-MM-DD HH:MM>`. Take every timestamp from the shell, never make one up: `date +'%Y-%m-%d %H:%M'`, or in PowerShell `Get-Date -Format 'yyyy-MM-dd HH:mm'`. To uncheck a line, restore it exactly to `- [ ] <step>` with the timestamp removed.
 5. **Never share, upload, email or send anything.** Everything stays in this folder.
@@ -27,7 +27,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
 
 ## START
 
-1. **Read the topic.** The topic is the text the user typed after `/prep-class`. Do not rely on `$ARGUMENTS`; Antigravity does not document it. If no topic was given and `status.md` exists, take the topic from its first line and go to step 4 as a same-topic run. If no topic was given and there is no `status.md`, ask for one and wait. If the text has a second sentence about what students get wrong (for example `/prep-class Ohm's law. Students mix up series and parallel circuits.`), the first part is the topic and the rest is the known struggle; keep it for the grill.
+1. **Read the topic.** The topic is the text the user typed after `/prep-class`. Do not rely on `$ARGUMENTS`; Antigravity does not document it. If no topic was given and `status.md` exists, take the topic from its first line, continue with step 2, and treat it as a same-topic run at step 4. If no topic was given and there is no `status.md`, ask for one and wait. If the text has a second sentence about what students get wrong (for example `/prep-class Ohm's law. Students mix up series and parallel circuits.`), the first part is the topic and the rest is the known struggle; keep it for the grill.
 2. **Check skills.** Read `skill-sources.json`. For each entry, check that `<installDir>/<name>/SKILL.md` exists and `<installDir>/<name>/.installed-from` contains `<repo>@<ref>`. If any is missing, follow `.claude/skills/setup-studio/SKILL.md` (both parts). If it says a newly installed skill needs a new session, tell the user to restart the session and run `/prep-class` again, then stop. Otherwise continue here.
 3. **Check inputs.** Both files must exist:
    - `inputs/textbook-chapter.pdf` — the textbook chapter;
@@ -85,7 +85,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
 
 1. **Start three subagents in parallel** (one message, or one `invoke_subagent` call):
    - `textbook-researcher` — read `inputs/textbook-chapter.pdf`, `brief.md`; write `research/textbook.md`;
-   - `web-researcher` — read `brief.md`; write `research/web.md`;
+   - `web-researcher` — read `brief.md`; write `research/web.md`; add one extra prompt line, `Today's date: YYYY-MM-DD`, with the date taken from the shell as in Rule 4 (`date +'%Y-%m-%d'`, or PowerShell `Get-Date -Format 'yyyy-MM-dd'`);
    - `syllabus-researcher` — read `inputs/syllabus-unit.pdf`; write `research/syllabus.md`.
 2. **If a researcher reports that a PDF has no text layer** (`scripts/pdf_text.py` exited 2 with "no text layer"), do not rerun it. Stop the run and tell the user: replace `inputs/<file>` with a PDF that has selectable text, then run `/prep-class` again.
 3. **Check** all three files exist. Mark `Research` done.

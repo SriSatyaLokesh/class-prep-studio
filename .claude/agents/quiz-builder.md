@@ -53,7 +53,8 @@ Write `outputs/quiz.md` in exactly this format:
 - Write a question with no correct option or more than one.
 - Copy textbook text.
 - Write any file other than `outputs/quiz.md`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `outputs/quiz.md` has `## Questions` with exactly 10 questions, options A to D, and `## Answer key` with 10 lines.
