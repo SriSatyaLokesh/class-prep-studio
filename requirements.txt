@@ -1,0 +1,7 @@
+pdfplumber
+pypdf
+reportlab
+markitdown[pptx]
+Pillow
+defusedxml
+lxml

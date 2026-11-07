@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Write",
+      "Edit",
+      "Bash(python *)",
+      "Bash(py *)",
+      "Bash(node *)",
+      "Bash(npm install *)",
+      "Bash(markitdown *)",
+      "PowerShell(python *)",
+      "PowerShell(py *)",
+      "PowerShell(node *)",
+      "PowerShell(npm install *)",
+      "PowerShell(markitdown *)"
+    ]
+  }
+}
