@@ -373,7 +373,7 @@ Sections, at most about 600 words:
 ### 9.8 `review.md` and `status.md`
 
 **`review.md`:**
-- `## Findings` — a table with columns #, File, Problem, Check (from section 11), Owner (builder name).
+- `## Findings` — a table with columns #, File, Problem, Check (from section 11), Owner (agent name: a builder, or `planner` for plan-level findings).
 - `## Fixes made` — added by the orchestrator.
 - `## Unresolved` — added by the orchestrator.
 
@@ -524,7 +524,7 @@ Prerequisites are declared, not scripted, so they work on Windows, macOS and Lin
 
 | Harness | What to expect |
 |---|---|
-| Claude Code | A committed `.claude/settings.json` pre-allows `WebSearch`, `WebFetch`, `Write`, `Edit`, and `Bash` for `python`, `py`, `node`, `npm install`, `markitdown` (exact syntax from Task 2). Anything else still asks. The README tells the faculty member to approve other prompts for this folder. |
+| Claude Code | A committed `.claude/settings.json` pre-allows `WebSearch`, `WebFetch`, `Write`, `Edit`, and `Bash` for `python`, `py`, `node`, `npm install`, `markitdown` using the exact permission-rule syntax from the current Claude Code settings docs, checked at build time. Anything else still asks. The README tells the faculty member to approve other prompts for this folder. |
 | Antigravity | Reading web pages (`read_url`) asks for approval each time by default. Commands run in the sandbox (`commandExecutionPolicy: sandbox`). If a builder’s `node` or `python` command fails inside the sandbox, the README tells the faculty member to set `commandExecutionPolicy: auto` for that agent only. |
 
 No paid API keys beyond the harness itself. Web research uses the harness’s built-in search.
@@ -600,7 +600,7 @@ The repository has no real PDFs, so `scripts/make_sample_inputs.py` generates tw
 
 The script does not overwrite existing files in `inputs/`. A faculty member replaces these two files with their own.
 
-### 13.2 Agent-verified test (the human runs this)
+### 13.2 Test run (the human runs this in a fresh session)
 
 Run by the human in a fresh Claude Code session, not by the building agent. Reasons: `/prep-class` has `disable-model-invocation: true`, so the agent cannot start it; and Claude Code detects new agent files only in `agents` directories that existed when the session started, so a session that created `.claude/agents/` needs a restart (source: https://code.claude.com/docs/en/sub-agents, checked 2026-11-07).
 
@@ -666,6 +666,9 @@ Python standard library only. Exit code 0 on pass, 1 on fail, and one line per f
   - `.claude/skills/setup-studio/SKILL.md` exists with `name: setup-studio`.
   - `.claude/skills/prep-class/SKILL.md` exists with `name: prep-class`.
   - `.agents/skills.json` is valid JSON with an entry whose `path` is `.claude/skills`.
+- **Settings and generated files:**
+  - `.claude/settings.json` exists and is valid JSON with `permissions.allow`.
+  - Each `.agents/agents/*.md` is identical to the output of `sync_agents.antigravity_text` for the matching Claude file.
 - **Project files:**
   - `CLAUDE.md` contains `@AGENTS.md`.
   - `AGENTS.md` contains every guardrail heading from section 16.
@@ -676,19 +679,19 @@ Python standard library only. Exit code 0 on pass, 1 on fail, and one line per f
 
 ## 15. Build tasks, in order
 
-1. **Branch and test.** Create branch `build/studio`. Write `scripts/check_studio.py` and run it: it fails.
-2. **Prerequisites.** Write `requirements.txt`, `package.json` and `.gitignore`. Install them.
+1. **Branch and test.** On branch `build/studio`, write `scripts/check_studio.py` and `scripts/test_scripts.py`, and run `check_studio.py`: it fails.
+2. **Prerequisites.** Write `requirements.txt`, `package.json`, `.gitignore` and `.claude/settings.json`. Install the packages.
 3. **Skills.**
    - Write `skill-sources.json`, resolving each `ref` to the current commit SHA of the repository’s default branch (for example with `git ls-remote <repo> HEAD`, or the GitHub API).
    - Write `.claude/skills/setup-studio/SKILL.md` (10.1.2).
    - Follow `/setup-studio` yourself to install the skills.
    - Check: every entry is installed with its `.installed-from` file, and the setup report shows no failures.
 4. **Scripts.**
-   - Write `scripts/pdf_text.py`.
+   - Write `scripts/pdf_text.py` and `scripts/check_copy.py`.
    - Write `scripts/make_sample_inputs.py` and run it.
    - Check: `python scripts/pdf_text.py inputs/textbook-chapter.pdf` prints 5 pages.
 5. **Shared rules.** Write `AGENTS.md`, `CLAUDE.md` and `.agents/skills.json`.
-6. **Agents.** Write the 11 Claude agent files, then the 11 Antigravity files with identical bodies.
+6. **Agents.** Write the 11 Claude agent files, write `scripts/sync_agents.py`, and run it to generate the 11 Antigravity files.
 7. **Orchestrator.** Write `.claude/skills/prep-class/SKILL.md`. Check: `python scripts/check_studio.py` passes.
 8. **README.** Write `README.md` (13.3, items 3 and 4).
 9. **Hand off.** Commit, tag `prebuilt`, hand off.
