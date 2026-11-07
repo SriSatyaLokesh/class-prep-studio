@@ -93,7 +93,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
 ## DEBATE
 
 1. **Create `debate.md`** containing only the line `# Debate: <topic>`.
-2. **Run six subagent calls, one at a time, in this order:** student, expert, student, expert, student, expert. Before each `student` call, you append the heading `## Round N` (N = 1, 2, 3) to `debate.md`, with a blank line before it. Each call reads `research/textbook.md`, `research/web.md`, `research/syllabus.md` and `debate.md`, and appends exactly one turn to `debate.md`.
+2. **Run six subagent calls, one at a time, in this order:** student, expert, student, expert, student, expert. Do not write round headings yourself; the `student` agent appends `## Round N` before its turn. Each call reads `research/textbook.md`, `research/web.md`, `research/syllabus.md` and `debate.md`, and appends exactly one turn to `debate.md`.
 3. **Check** `debate.md` has three rounds, each with one `**Student:**` and one `**Expert:**` turn, and every expert turn ends with `Sources:` and citation tags. Mark `Debate` done.
 
 ## PLAN
@@ -113,7 +113,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
    - `slides-builder` — read `outputs/plan.md`, `research/*.md`; write `outputs/slides.pptx`;
    - `qna-builder` — read `outputs/plan.md`, `debate.md`, `research/*.md`; write `outputs/qna.md`;
    - `quiz-builder` — read `outputs/plan.md`, `research/*.md`; write `outputs/quiz.md`.
-2. **Check** all three files exist. Mark `Build A` done.
+2. **Check** all three files exist. If the `slides-builder` reply says "render check skipped", remember it for REVIEW. Builders may also write generator scripts to `outputs/.build/`; that folder is expected. Mark `Build A` done.
 
 ## BUILD B
 
@@ -122,7 +122,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
 
 ## REVIEW
 
-1. **Start `reviewer`** — read `outputs/*`, `research/*.md`, `brief.md`, `inputs/textbook-chapter.pdf`; write `review.md`.
+1. **Start `reviewer`** — read `outputs/*`, `research/*.md`, `brief.md`, `inputs/textbook-chapter.pdf`; write `review.md`. If the slides render check was skipped, add one line to the prompt: *Note: render check skipped (LibreOffice not available) — add this to review.md.*
 2. **Check** `review.md` has a `## Findings` table. Mark `Review` done.
 
 ## FIX PASS
@@ -137,7 +137,7 @@ You are the orchestrator. You run in the main session. Subagents do the research
 
 ## GATE 2
 
-1. **Stop.** Show `review.md` and the list of files in `outputs/`. If any Unresolved finding is owned by `planner`, offer: *re-plan (back to Gate 1) or accept as is.* End the turn with: *Reply "approved" to finish, or tell me what to change. Nothing has been shared with anyone.*
+1. **Stop.** Show `review.md` and the list of files in `outputs/` (leave out `outputs/.build/`; it holds build scripts, not outputs). If any Unresolved finding is owned by `planner`, offer: *re-plan (back to Gate 1) or accept as is.* End the turn with: *Reply "approved" to finish, or tell me what to change. Nothing has been shared with anyone.*
 2. **On "approved"** (or "accept as is"): mark `Gate 2 approved` and stop. Never share, upload or send anything.
 3. **On "re-plan":** rerun `planner` with the same prompt plus *Changes requested: fix plan findings <numbers> in review.md* (add `review.md` to its files to read). Uncheck `Gate 1 approved` and every later line in `status.md`, then go to GATE 1. Everything after Gate 1 runs again.
 4. **On other changes:** rerun only the affected builders (each with its usual prompt plus *Changes requested: <the user's words>*; rerun `notes-builder` too if `outputs/qna.md` changed). Then rerun `reviewer` once, with no new fix pass, and append the same `## Fixes made` and `## Unresolved` sections for the change. Repeat GATE 2.
