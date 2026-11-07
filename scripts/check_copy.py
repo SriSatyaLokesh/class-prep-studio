@@ -9,7 +9,7 @@ from pdf_text import page_texts  # noqa: E402
 
 
 def normalise(text: str) -> list[str]:
-    text = unicodedata.normalize("NFKC", text).replace("-\n", "")
+    text = re.sub(r"-\r?\n", "", unicodedata.normalize("NFKC", text))
     return re.findall(r"[a-z0-9']+", text.lower())
 
 
@@ -38,10 +38,19 @@ def read_file(path: Path) -> str:
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         sys.exit("usage: check_copy.py <textbook.pdf> <file>...")
-    source = "\n".join(page_texts(Path(sys.argv[1])))
+    def read_or_exit(path: Path) -> str:
+        try:
+            return read_file(path)
+        except (OSError, UnicodeDecodeError) as e:
+            print(f"cannot read {path}: {e}", file=sys.stderr)
+            sys.exit(2)  # distinct from 1 (copy found)
+
+    source = read_or_exit(Path(sys.argv[1]))
     found = False
     for f in sys.argv[2:]:
-        for phrase in overlaps(source, read_file(Path(f))):
+        if Path(f).is_dir():
+            continue
+        for phrase in overlaps(source, read_or_exit(Path(f))):
             print(f'{f}: "{phrase}"')
             found = True
     sys.exit(1 if found else 0)

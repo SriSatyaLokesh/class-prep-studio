@@ -74,7 +74,7 @@ def _build(path: Path, pages: list[list[tuple[str, str]]], numbered: bool) -> No
     SimpleDocTemplate(str(path), pagesize=A4).build(flow, onFirstPage=footer, onLaterPages=footer)
 
 
-def main(inputs: Path = Path("inputs")) -> list[Path]:
+def main(inputs: Path = Path(__file__).resolve().parent.parent / "inputs") -> list[Path]:
     inputs.mkdir(parents=True, exist_ok=True)
     written = []
     for name, pages, numbered in (("textbook-chapter.pdf", TEXTBOOK, True), ("syllabus-unit.pdf", [SYLLABUS], False)):

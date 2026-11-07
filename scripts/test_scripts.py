@@ -59,7 +59,9 @@ assert overlaps(src, "we know " + src) != []
 eleven = " ".join(src.split()[:11])
 assert overlaps(src, eleven + " banana") == []
 assert overlaps("the \ufb01rst connec-\ntion " + src, "the first connection " + src)  # Review Focus 2
-pages = page_texts(Path("inputs/textbook-chapter.pdf"))
+assert overlaps("connec-\r\ntion " + src, "connection " + src)  # CRLF hyphen join
+INPUTS = Path(__file__).resolve().parent.parent / "inputs"
+pages = page_texts(INPUTS / "textbook-chapter.pdf")
 assert len(pages) == 5 and all(p.strip() for p in pages)
 
 from reportlab.pdfgen import canvas  # noqa: E402
@@ -72,5 +74,10 @@ with tempfile.TemporaryDirectory() as tmp:
     script = Path(__file__).resolve().parent / "pdf_text.py"
     r = subprocess.run([sys.executable, str(script), str(blank)], capture_output=True, text=True)
     assert r.returncode == 2 and "no text layer" in r.stderr, (r.returncode, r.stderr)  # Review Focus 1
+    cc = [sys.executable, str(Path(__file__).resolve().parent / "check_copy.py"), str(INPUTS / "textbook-chapter.pdf")]
+    r = subprocess.run(cc + [str(Path(tmp) / "missing.md")], capture_output=True, text=True)
+    assert r.returncode == 2 and "cannot read" in r.stderr, (r.returncode, r.stderr)
+    r = subprocess.run(cc + [tmp], capture_output=True, text=True)
+    assert r.returncode == 0 and r.stdout == "", (r.returncode, r.stdout, r.stderr)
 
 print("ok")
