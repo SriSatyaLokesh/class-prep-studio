@@ -63,7 +63,7 @@ def split_frontmatter(text):
         raise ValueError("unterminated frontmatter") from None
     fields, key = {}, None
     for raw in lines[1:end]:
-        line = re.sub(r"(^|\s)#.*$", "", raw).rstrip()
+        line = re.sub(r"^(\s*[\w-]+:)\s+#.*$", r"\1", raw).rstrip()  # only a comment-only value side
         if not line.strip():
             continue
         if line.lstrip().startswith("- ") and key and isinstance(fields[key], list):
@@ -103,7 +103,10 @@ def _json(p, fails, label):
 
 
 def _git(root, *args):
-    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
+    try:
+        return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
+    except OSError as e:  # git not installed
+        return subprocess.CompletedProcess(args, 1, "", str(e))
 
 
 def _agent_checks(root, fails):
@@ -156,9 +159,12 @@ def _skill_checks(root, fails):
     data = _json(root / "skill-sources.json", fails, "skill-sources.json")
     entries = []
     if data is not None:
+        if not isinstance(data, dict):
+            fails.append("skill-sources.json: must be a JSON object")
+            data = {}
+        entries = [e for e in data.get("skills", []) if isinstance(e, dict)]
         if data.get("version") != 1:
             fails.append("skill-sources.json: version must be 1")
-        entries = data.get("skills", [])
     names = set()
     for e in entries:
         names.add(e.get("name"))
@@ -190,14 +196,16 @@ def _skill_checks(root, fails):
         except (OSError, ValueError) as err:
             fails.append(f".claude/skills/{n}/SKILL.md: {err}")
     sk = _json(root / ".agents/skills.json", fails, ".agents/skills.json")
-    if sk is not None and not any(x.get("path") == ".claude/skills" for x in sk.get("entries", [])):
+    if sk is not None and not (isinstance(sk, dict) and any(
+            isinstance(x, dict) and x.get("path") == ".claude/skills" for x in sk.get("entries", []))):
         fails.append(".agents/skills.json: no entry with path .claude/skills")
     return entries
 
 
 def _settings_checks(root, fails):
     s = _json(root / ".claude/settings.json", fails, ".claude/settings.json")
-    if s is not None and "allow" not in s.get("permissions", {}):
+    if s is not None and not (isinstance(s, dict) and isinstance(s.get("permissions"), dict)
+                              and "allow" in s["permissions"]):
         fails.append(".claude/settings.json: missing permissions.allow")
     try:  # lazy: sync_agents is written in a later task and imports from this module
         sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -242,6 +250,51 @@ def structure_checks(root):
     return fails
 
 
+def _in_order(text, wanted, label, fails):
+    """Fail unless the '## ' headings in `wanted` appear in this order."""
+    found = [h for h in re.findall(r"^## (.+?)\s*$", text, re.M) if h in wanted]
+    if found != wanted:
+        fails.append(f"{label}: '## ' headings must be {wanted} in order, found {found}")
+
+
+def _format_checks(root, fails):
+    """Section 9 formats for the run files (all known to exist)."""
+    t = {r: _read(root / r) for r in ("status.md", "brief.md", "research/textbook.md", "research/web.md",
+                                       "research/syllabus.md", "debate.md")}
+    tb = t["research/textbook.md"]
+    _in_order(tb, ["Key ideas", "Definitions", "Worked examples", "Common errors"], "research/textbook.md", fails)
+    for b in re.findall(r"^- .*$", tb, re.M):
+        if not re.search(r"\[TB p\.\d+\]\s*$", b):
+            fails.append(f"research/textbook.md: bullet lacks [TB p.N] tag: {b[:60]!r}")
+    _in_order(t["research/web.md"], ["Examples and applications", "References"], "research/web.md", fails)
+    syl = t["research/syllabus.md"]
+    _in_order(syl, ["Course outcomes", "Must cover"], "research/syllabus.md", fails)
+    if not re.search(r"^(?:- )?CO-\d+:", syl, re.M):
+        fails.append("research/syllabus.md: no 'CO-n:' outcome line")
+    brief = t["brief.md"]
+    if not brief.startswith("# Brief: "):
+        fails.append("brief.md: first line must start '# Brief: '")
+    for f in ("Students", "Depth", "Known struggles", "Emphasise", "Examples to use", "Leave out"):
+        if not re.search(rf"^- {f}:", brief, re.M):
+            fails.append(f"brief.md: missing '- {f}:' field")
+    debate = t["debate.md"]
+    if not re.match(r"# Debate: ", debate):
+        fails.append("debate.md: first line must start '# Debate: '")
+    rounds = re.split(r"^## Round \d+\s*$", debate, flags=re.M)[1:]
+    if len(rounds) != 3:
+        fails.append(f"debate.md: expected 3 rounds, found {len(rounds)}")
+    for i, r in enumerate(rounds, 1):
+        if r.count("**Student:**") != 1 or r.count("**Expert:**") != 1:
+            fails.append(f"debate.md: round {i} needs exactly one **Student:** and one **Expert:**")
+        elif "Sources:" not in r.split("**Expert:**")[1]:
+            fails.append(f"debate.md: round {i} expert answer lacks 'Sources:'")
+    status = t["status.md"]
+    if not status.startswith("Topic: "):
+        fails.append("status.md: first line must start 'Topic: '")
+    if not re.search(r"^- \[[ x]\] Gate 1 approved", status, re.M):
+        fails.append("status.md: missing 'Gate 1 approved' line")
+
+
 def run_checks(root):
     fails = []
     for rel in ("status.md", "brief.md", "research/textbook.md", "research/web.md",
@@ -250,10 +303,8 @@ def run_checks(root):
             fails.append(f"{rel}: missing")
     if fails:
         return fails
-    rounds = len(re.findall(r"^## Round \d+", _read(root / "debate.md"), re.M))
-    if rounds != 3:
-        fails.append(f"debate.md: expected 3 rounds, found {rounds}")
-    plan = _read(root / "outputs/plan.md")
+    _format_checks(root, fails)
+    plan =_read(root / "outputs/plan.md")
     for h in ("Objectives", "Flow", "Examples", "Questions to raise in class", "Conflicts between sources"):
         if not re.search(rf"^## {h}\s*$", plan, re.M):
             fails.append(f"outputs/plan.md: missing '## {h}'")
@@ -270,7 +321,8 @@ def run_checks(root):
         fails.append(f"outputs/plan.md: {co} from syllabus not in plan")
     if re.search(r"^- \[x\] Gate 1 approved", _read(root / "status.md"), re.M):
         fails.append("status.md: Gate 1 already approved (expected to stop at Gate 1)")
-    extra = sorted(p.name for p in (root / "outputs").iterdir() if p.name != "plan.md")
+    extra = sorted(p.name for p in (root / "outputs").iterdir()
+                   if p.name != "plan.md" and not p.name.startswith("."))
     if extra:
         fails.append(f"outputs/: expected only plan.md at Gate 1, also found {extra}")
     return fails
