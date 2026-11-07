@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "installDir": ".claude/skills",
+  "skills": [
+    {
+      "name": "pptx",
+      "repo": "https://github.com/anthropics/skills",
+      "ref": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+      "path": "skills/pptx",
+      "usedBy": [
+        "slides-builder"
+      ]
+    },
+    {
+      "name": "pdf",
+      "repo": "https://github.com/anthropics/skills",
+      "ref": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+      "path": "skills/pdf",
+      "usedBy": [
+        "textbook-researcher",
+        "syllabus-researcher",
+        "notes-builder"
+      ]
+    },
+    {
+      "name": "grilling",
+      "repo": "https://github.com/mattpocock/skills",
+      "ref": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "path": "skills/productivity/grilling",
+      "usedBy": [
+        "prep-class"
+      ]
+    },
+    {
+      "name": "retrieval-practice-generator",
+      "repo": "https://github.com/GarethManning/education-agent-skills",
+      "ref": "135d6275e7db0657d70b147f46d3191c5430677d",
+      "path": "skills/memory-learning-science/retrieval-practice-generator",
+      "usedBy": [
+        "quiz-builder"
+      ]
+    },
+    {
+      "name": "hinge-question-designer",
+      "repo": "https://github.com/GarethManning/education-agent-skills",
+      "ref": "135d6275e7db0657d70b147f46d3191c5430677d",
+      "path": "skills/questioning-discussion/hinge-question-designer",
+      "usedBy": [
+        "qna-builder",
+        "quiz-builder"
+      ]
+    },
+    {
+      "name": "socratic-questioning-sequence-generator",
+      "repo": "https://github.com/GarethManning/education-agent-skills",
+      "ref": "135d6275e7db0657d70b147f46d3191c5430677d",
+      "path": "skills/questioning-discussion/socratic-questioning-sequence-generator",
+      "usedBy": [
+        "qna-builder"
+      ]
+    },
+    {
+      "name": "backwards-design-unit-planner",
+      "repo": "https://github.com/GarethManning/education-agent-skills",
+      "ref": "135d6275e7db0657d70b147f46d3191c5430677d",
+      "path": "skills/curriculum-assessment/backwards-design-unit-planner",
+      "usedBy": [
+        "planner"
+      ]
+    }
+  ]
+}
