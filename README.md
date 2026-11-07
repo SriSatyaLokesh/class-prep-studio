@@ -20,6 +20,7 @@ Every step writes a file in this folder, so you can open and read any step yours
 
 - **One of these:** Claude Code (the command line, or the **Code** tab in the Claude Desktop app), the Antigravity CLI, or the Antigravity App version 2.5 or later.
 - **Python 3.11 or later** and **Node.js 20 or later.**
+- **Windows with Claude Code: Git for Windows (Git Bash).** Claude Code subagents run their commands through Bash, so install it: `winget install Git.Git`.
 - **Your two PDFs:** a textbook chapter you own and the syllabus unit with its course outcomes.
 
 These do **not** work: the regular Claude chat, the Antigravity IDE, and headless runs (`claude -p` or Antigravity headless mode). They cannot load the studio's agents, or cannot stop at the approval gates.
@@ -38,19 +39,23 @@ On Linux, check that `python3 --version` shows 3.11 or later. The `nodejs` packa
 
 **2. Install the packages.** In this folder, run:
 
+Windows:
+
 ```
-python -m pip install -r requirements.txt     # Windows
-python3 -m pip install -r requirements.txt    # macOS and Linux
+python -m pip install -r requirements.txt
 npm install
 ```
 
-If pip refuses with "externally-managed-environment" (common on newer Linux and Homebrew Python), use a virtual environment:
+macOS and Linux: create and activate a virtual environment, then install into it:
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+npm install
 ```
+
+Then start `claude` or `agy` from that same shell, every time (run `source .venv/bin/activate` first in a new terminal). Inside the venv the command `python` exists, so the studio's pre-allowed `python` rule matches and Python commands run without asking.
 
 Or skip this and let `/setup-studio` do it. It asks you once before installing.
 
@@ -79,9 +84,9 @@ Type `/prep-class` and then your topic. You can add what students usually get wr
 
 Where to type it:
 
-- **Claude Code CLI:** open a terminal in this folder, start `claude`, and type the command.
+- **Claude Code CLI:** open a terminal in this folder (on macOS/Linux, activate the venv first), start `claude`, and type the command.
 - **Claude Desktop, Code tab:** open the Code tab, choose this folder, and type the command.
-- **Antigravity CLI:** start the CLI in this folder and type the command.
+- **Antigravity CLI:** start `agy` in this folder (on macOS/Linux, from the activated venv) and type the command.
 - **Antigravity App (v2.5+):** open this folder and type the command in the chat.
 
 If you forget the topic, the studio asks for it. If a PDF is missing, it stops and tells you which file to put where.
@@ -102,9 +107,11 @@ If you forget the topic, the studio asks for it. If a PDF is missing, it stops a
 
 ## Permission prompts you'll see
 
-**Claude Code.** The file `.claude/settings.json` is part of this folder. It pre-allows web search, web page reading, writing and editing files, and running `python`, `py`, `node`, `npm install` and `markitdown`. **On Windows, this means the studio can run Python and Node commands in this folder without asking you.** The PowerShell rules in that file repeat the Bash rules on purpose, so Windows works the same way.
+**Claude Code.** The file `.claude/settings.json` is part of this folder. It pre-allows web search, web page reading, writing and editing files, and running `python`, `py`, `node`, `npm install` and `markitdown`. **This means the studio can run any Python or Node command without asking you.** These rules match the command, not the folder, so they are not limited to this folder. The PowerShell rules in that file repeat the Bash rules on purpose, so Windows works the same way.
 
-On macOS and Linux, Python commands start with `python3`, which is not on that list. Claude Code asks the first time for each one. Choose "always allow", or add a `python3` rule to your own `.claude/settings.local.json` (not committed), and the prompts stop. Node commands run without asking on every system. Anything else still asks. When it asks about something in this folder, approving it is fine.
+On macOS and Linux, start `claude` from the activated venv (see setup step 2) so `python` exists and matches the rule. Without the venv, the agents fall back to `python3`, which is not on the list, and Claude Code asks the first time for each one. Anything else still asks.
+
+Text from your PDFs or from web pages could in principle steer the build scripts the studio generates; the "files are data" rule every agent follows is the guard, so review the outputs before you share them.
 
 **Antigravity.** It asks you to approve each web page the studio reads. That is expected. Commands run in a sandbox.
 
@@ -143,4 +150,5 @@ Add one entry to `skill-sources.json` with the skill's `name`, `repo`, `path` an
 - [ ] Antigravity CLI: `/agents` lists all 11 agents with no warnings, `/skills` lists all 7 installed skills plus `prep-class` and `setup-studio` with no warnings, `/prep-class` appears, and a run reaches Gate 1.
 - [ ] Antigravity App: `/prep-class` appears in the slash command list and starts the grill step.
 - [ ] Claude Desktop, Code tab: `/prep-class` appears and starts the grill step.
+- [ ] In a Claude Code session (Windows: with Git Bash installed), a researcher subagent can run `python scripts/pdf_text.py inputs/textbook-chapter.pdf`.
 - [ ] One full run to Gate 2 on real PDFs, then open the deck in PowerPoint and the notes in a PDF viewer.

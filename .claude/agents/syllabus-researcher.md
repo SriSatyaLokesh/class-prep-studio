@@ -31,6 +31,8 @@ CO-2: <exact wording from the PDF>
 Number the outcomes as the syllabus numbers them. Every "Must cover" bullet ends with its `[CO-n]` tag.
 
 # Steps
+`python` means the project's Python: if `python` is not found, use `python3` (macOS/Linux) or `py` (Windows) for the same command.
+
 1. Read the PDF directly with your file reader first. If that fails or returns no text, run `python scripts/pdf_text.py inputs/syllabus-unit.pdf`; it prints each page after a `=== page N ===` line.
 2. If `pdf_text.py` exits with code 2 ("no text layer"), stop. Do not write the file and do not invent outcomes; reply to the orchestrator that the syllabus PDF has no text layer.
 3. Find the course outcomes for the unit. Copy each one exactly, character for character, as `CO-n: <wording>`.

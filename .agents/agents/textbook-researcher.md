@@ -44,6 +44,8 @@ Write `research/textbook.md` in exactly this format. Sections in this order:
 Every bullet ends with a `[TB p.N]` tag, where N is the PDF page index starting at 1. No other headings, no bullets without a tag.
 
 # Steps
+`python` means the project's Python: if `python` is not found, use `python3` (macOS/Linux) or `py` (Windows) for the same command.
+
 1. Read `brief.md` for the topic, depth, known struggles and what to emphasise or leave out.
 2. Read the PDF directly with your file reader first. If that fails or returns no text, run `python scripts/pdf_text.py inputs/textbook-chapter.pdf`; it prints each page after a `=== page N ===` line. Keep those page numbers.
 3. If `pdf_text.py` exits with code 2 ("no text layer"), stop. Do not write the file and do not invent content; reply to the orchestrator that the chapter PDF has no text layer.

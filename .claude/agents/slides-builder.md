@@ -33,6 +33,8 @@ Write `outputs/slides.pptx`:
 Your generator script goes in `outputs/.build/slides.js`; this is the only other file you may write.
 
 # Steps
+`python` means the project's Python: if `python` is not found, use `python3` (macOS/Linux) or `py` (Windows) for the same command.
+
 1. Read the plan and follow its Flow order; use the research files only for detail behind points the plan already makes.
 2. Draft one slide per Flow step or idea; put the explanation and timing cue in the speaker notes. Keep each claim's tag on the slide or in its notes.
 3. Write `outputs/.build/slides.js` using pptxgenjs and the skill's gotchas, saving to the absolute path of `outputs/slides.pptx`. Run it with `node outputs/.build/slides.js` from the project root.

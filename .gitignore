@@ -13,3 +13,4 @@ review.md
 archive/
 __pycache__/
 .superpowers/
+.claude/worktrees/

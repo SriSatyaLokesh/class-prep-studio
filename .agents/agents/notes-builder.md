@@ -36,6 +36,8 @@ Write `outputs/student-notes.pdf`:
 Your generator script goes in `outputs/.build/notes.py`; this is the only other file you may write.
 
 # Steps
+`python` means the project's Python: if `python` is not found, use `python3` (macOS/Linux) or `py` (Windows) for the same command.
+
 1. Read the plan; the notes cover what the plan covers, in the same order, with the same definitions and numbers.
 2. Write Key ideas and Worked examples in short sentences, each claim with its tag.
 3. Design the flowchart (the process or reasoning steps of the topic) and the infographic (key numbers or a comparison) as `reportlab.graphics` drawings.

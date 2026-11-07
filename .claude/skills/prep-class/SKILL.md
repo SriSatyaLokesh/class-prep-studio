@@ -34,6 +34,8 @@ You are the orchestrator. You run in the main session. Subagents do the research
    - `inputs/syllabus-unit.pdf` — the syllabus unit with course outcomes.
 
    If either is missing, stop and tell the user which file to put where. Do not continue.
+
+   Then run `python scripts/pdf_text.py <pdf>` on each file (if `python` is not found, use `python3` on macOS/Linux or `py` on Windows for the same command). If it exits 2 ("no text layer"), stop and tell the user to replace that file with a PDF that has selectable text, then run `/prep-class` again. Do not continue.
 4. **Check for a previous run.** Read `status.md` if it exists.
    - **Same topic** (its first line is `Topic: <this topic>`): find the first unchecked line. Ask: *Resume from <next step>, or start over?* and wait. On "resume", skip to that step (a gate step means: show the gate again). If every line is checked, the run is finished; ask whether to start over.
    - **Different topic:** ask: *Archive the previous run on "<old>" and start "<new>"?* and wait. On yes, archive (step 5). On no, stop.
@@ -127,10 +129,10 @@ You are the orchestrator. You run in the main session. Subagents do the research
 
 ## FIX PASS
 
-1. **Group the findings by Owner.** For each builder named, start that builder once (builders with findings may run in parallel, except `notes-builder` runs after `qna-builder` if both are named). The prompt: topic; read `review.md` plus the builder's usual files; write its usual file; plus one line, *Fix findings <numbers> in review.md.*
+1. **Group the findings by Owner.** For each builder named, start that builder once (builders with findings may run in parallel, except `notes-builder` runs after `qna-builder` if both are named). If `qna-builder` is fixed, also rerun `notes-builder` after it with its usual prompt (its Important questions come from `outputs/qna.md`), even if no finding names it. The prompt: topic; read `review.md` plus the builder's usual files; write its usual file; plus one line, *Fix findings <numbers> in review.md.*
 2. **Each builder gets exactly one fix pass.** Do not rerun the reviewer here.
 3. **Findings owned by `planner` get no fix pass.** List them under Unresolved.
-4. **Append to `review.md`** (the one time anyone but the reviewer writes it):
+4. **Append to `review.md`** (the one time anyone but the reviewer writes it). If `## Fixes made` or `## Unresolved` is already there (a resumed run), replace those sections instead of adding a second copy:
    - `## Fixes made` — one line per fixed finding: `<#> — <file> — <what changed>`, or the single line "None";
    - `## Unresolved` — each finding not fixed, with the reason (planner-owned, or the builder could not fix it), or the single line "None".
 5. Mark `Fix pass` done.
@@ -140,4 +142,4 @@ You are the orchestrator. You run in the main session. Subagents do the research
 1. **Stop.** Show `review.md` and the list of files in `outputs/` (leave out `outputs/.build/`; it holds build scripts, not outputs). If any Unresolved finding is owned by `planner`, offer: *re-plan (back to Gate 1) or accept as is.* End the turn with: *Reply "approved" to finish, or tell me what to change. Nothing has been shared with anyone.*
 2. **On "approved"** (or "accept as is"): mark `Gate 2 approved` and stop. Never share, upload or send anything.
 3. **On "re-plan":** rerun `planner` with the same prompt plus *Changes requested: fix plan findings <numbers> in review.md* (add `review.md` to its files to read). Uncheck `Gate 1 approved` and every later line in `status.md`, then go to GATE 1. Everything after Gate 1 runs again.
-4. **On other changes:** rerun only the affected builders (each with its usual prompt plus *Changes requested: <the user's words>*; rerun `notes-builder` too if `outputs/qna.md` changed). Then rerun `reviewer` once, with no new fix pass, and append the same `## Fixes made` and `## Unresolved` sections for the change. Repeat GATE 2.
+4. **On other changes:** rerun only the affected builders (each with its usual prompt plus *Changes requested: <the user's words>*; rerun `notes-builder` too if `outputs/qna.md` changed). Then rerun `reviewer` once, with no new fix pass. Append `## Fixes made` listing the requested changes (one line each: `<file> — <what changed>`) and `## Unresolved` listing the new findings from this review, or the single line "None"; replace either section if it is already there. Repeat GATE 2.
