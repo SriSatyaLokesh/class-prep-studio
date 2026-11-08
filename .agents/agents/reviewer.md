@@ -42,6 +42,8 @@ Write `review.md` in exactly this format:
 - Do not write `## Fixes made` or `## Unresolved`; the orchestrator adds them.
 
 # Steps
+`python` means the project's Python: if `python` is not found, use `python3` (macOS/Linux) or `py` (Windows) for the same command.
+
 1. Read the outputs. Use `markitdown outputs/slides.pptx` for the deck and `python scripts/pdf_text.py outputs/student-notes.pdf` for the notes.
 2. Run the seven checks, in order:
    1. Every factual claim in every output carries a `[TB p.N]` or `[WEB-n]` tag that exists in `research/`.

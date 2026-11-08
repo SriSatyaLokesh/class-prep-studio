@@ -53,7 +53,9 @@ import make_sample_inputs  # noqa: E402
 from check_copy import overlaps  # noqa: E402
 from pdf_text import page_texts  # noqa: E402
 
-make_sample_inputs.main()  # inputs/*.pdf are git-ignored; no overwrite
+# Creates synthetic sample PDFs in inputs/ (git-ignored; existing files are not overwritten).
+# Replace them with your real textbook and syllabus PDFs before running /prep-class.
+make_sample_inputs.main()
 src = "the current through a conductor is directly proportional to the voltage across it at constant temperature"
 assert overlaps(src, "we know " + src) != []
 eleven = " ".join(src.split()[:11])
@@ -80,6 +82,12 @@ with tempfile.TemporaryDirectory() as tmp:
     r = subprocess.run(cc + [tmp], capture_output=True, text=True)
     assert r.returncode == 0 and r.stdout == "", (r.returncode, r.stdout, r.stderr)
     assert subprocess.run(cc, capture_output=True, text=True).returncode == 2  # usage error
+    r = subprocess.run(cc[:2] + [str(blank), str(INPUTS / "syllabus-unit.pdf")], capture_output=True, text=True)
+    assert r.returncode == 2 and "no text layer" in r.stderr, (r.returncode, r.stderr)
+    garbage = Path(tmp) / "garbage.pdf"
+    garbage.write_bytes(b"not a pdf")
+    r = subprocess.run(cc + [str(garbage)], capture_output=True, text=True)
+    assert r.returncode == 2 and "cannot read" in r.stderr, (r.returncode, r.stderr)
 
 # sync_agents
 from sync_agents import antigravity_text  # noqa: E402

@@ -42,11 +42,14 @@ if __name__ == "__main__":
     def read_or_exit(path: Path) -> str:
         try:
             return read_file(path)
-        except (OSError, UnicodeDecodeError) as e:
+        except Exception as e:  # corrupt PDF/PPTX raises pdfminer/markitdown errors
             print(f"cannot read {path}: {e}", file=sys.stderr)
             sys.exit(2)  # distinct from 1 (copy found)
 
     source = read_or_exit(Path(sys.argv[1]))
+    if not source.strip():
+        print(f"no text layer in {sys.argv[1]}", file=sys.stderr)
+        sys.exit(2)
     found = False
     for f in sys.argv[2:]:
         if Path(f).is_dir():

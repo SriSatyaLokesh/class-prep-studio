@@ -46,7 +46,7 @@ None found
 ```
 
 - Objectives: 3 to 5 items, each tagged `[CO-n]`.
-- Flow: the Minutes cells are whole numbers only (no ranges) and add up to exactly 50.
+- Flow: the Minutes cells are whole numbers only (no ranges) and add up to exactly 50. No total row; minutes are whole numbers only.
 - Conflicts: each conflict shows both claims with their tags, or the single line "None found".
 
 # Steps

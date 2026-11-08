@@ -304,7 +304,7 @@ def run_checks(root):
     if fails:
         return fails
     _format_checks(root, fails)
-    plan =_read(root / "outputs/plan.md")
+    plan = _read(root / "outputs/plan.md")
     for h in ("Objectives", "Flow", "Examples", "Questions to raise in class", "Conflicts between sources"):
         if not re.search(rf"^## {h}\s*$", plan, re.M):
             fails.append(f"outputs/plan.md: missing '## {h}'")
