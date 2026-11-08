@@ -1,0 +1,15 @@
+.claude/skills/*
+!.claude/skills/prep-class/
+!.claude/skills/setup-studio/
+.claude/settings.local.json
+node_modules/
+inputs/*.pdf
+status.md
+brief.md
+research/
+debate.md
+outputs/
+review.md
+archive/
+__pycache__/
+.superpowers/
