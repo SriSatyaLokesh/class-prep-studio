@@ -37,7 +37,8 @@ def read_file(path: Path) -> str:
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        sys.exit("usage: check_copy.py <textbook.pdf> <file>...")
+        print("usage: check_copy.py <textbook.pdf> <file>...", file=sys.stderr)
+        sys.exit(2)
     def read_or_exit(path: Path) -> str:
         try:
             return read_file(path)

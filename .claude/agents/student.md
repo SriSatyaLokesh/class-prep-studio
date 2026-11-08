@@ -50,7 +50,8 @@ N is one more than the number of `## Round` headings already in the file (Round 
 - Answer questions, or write an `**Expert:**` line.
 - Ask more than one question, or change earlier turns.
 - Write to any file other than `debate.md`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `debate.md` ends with a new `## Round <N>` heading followed by one `**Student:**` line.

@@ -44,7 +44,7 @@ Your generator script goes in `outputs/.build/slides.js`; this is the only other
 3. Write `outputs/.build/slides.js` using pptxgenjs and the skill's gotchas, saving to the absolute path of `outputs/slides.pptx`. Run it with `node outputs/.build/slides.js` from the project root.
 4. Validate: from `.claude/skills/pptx`, run `python scripts/office/validate.py <absolute path to outputs/slides.pptx>`. Fix the generator and rebuild until it passes.
 5. Check content with `markitdown outputs/slides.pptx`: slide count, notes on every slide, last slide "Sources".
-6. Render check (optional): on Linux use the skill's wrapper; on Windows or macOS run `soffice --headless --convert-to pdf` directly only if LibreOffice is installed. If it is not, skip the check and say "render check skipped: LibreOffice not installed" in your reply so the orchestrator tells the reviewer.
+6. Render check (optional): on Linux use the skill's wrapper; on Windows or macOS run `soffice --headless --convert-to pdf --outdir outputs/.build outputs/slides.pptx` directly only if LibreOffice is installed. If it is not, skip the check and say "render check skipped: LibreOffice not installed" in your reply so the orchestrator tells the reviewer.
 
 The only commands you may run are `node`, `python` and `markitdown`, for the pptx skill.
 
@@ -53,7 +53,8 @@ The only commands you may run are `node`, `python` and `markitdown`, for the ppt
 - Use textbook figures or copy textbook text.
 - Use fonts other than Calibri or Arial.
 - Write any file other than `outputs/slides.pptx` and `outputs/.build/slides.js`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `outputs/slides.pptx` has 10 to 14 slides, each with speaker notes, and the last slide is "Sources".

@@ -32,13 +32,24 @@ These do **not** work: the regular Claude chat, the Antigravity IDE, and headles
 |---|---|---|
 | Windows | `winget install Python.Python.3.12` | `winget install OpenJS.NodeJS.LTS` |
 | macOS | `brew install python node` | (same line) |
-| Linux | `sudo apt install python3 python3-pip nodejs npm` | (same line) |
+| Linux | `sudo apt install python3 python3-pip python3-venv` | the installer from nodejs.org, or NodeSource |
+
+On Linux, check that `python3 --version` shows 3.11 or later. The `nodejs` package from apt is too old on many systems (Node 12 on Ubuntu 22.04, Node 18 on Ubuntu 24.04 and Debian 12), so get Node 20 or later from nodejs.org or NodeSource instead. Check with `node --version`.
 
 **2. Install the packages.** In this folder, run:
 
 ```
-python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt     # Windows
+python3 -m pip install -r requirements.txt    # macOS and Linux
 npm install
+```
+
+If pip refuses with "externally-managed-environment" (common on newer Linux and Homebrew Python), use a virtual environment:
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 Or skip this and let `/setup-studio` do it. It asks you once before installing.
@@ -56,7 +67,7 @@ Or skip this and let `/setup-studio` do it. It asks you once before installing.
 
 Use exactly these names. Your PDFs are git-ignored, so they are never committed.
 
-To try the studio without your own files, run `python scripts/make_sample_inputs.py`. It makes two made-up sample PDFs on Ohm's law and Kirchhoff's laws. It never overwrites a file that is already there, so delete the samples before you copy your own PDFs in.
+To try the studio without your own files, run `python scripts/make_sample_inputs.py`. It makes two made-up sample PDFs on Ohm's law and Kirchhoff's laws. Copy your own PDFs over the samples; running the script again won't touch them.
 
 ## Run it
 
@@ -91,25 +102,31 @@ If you forget the topic, the studio asks for it. If a PDF is missing, it stops a
 
 ## Permission prompts you'll see
 
-**Claude Code.** The file `.claude/settings.json` is part of this folder. It pre-allows web search, web page reading, writing and editing files, and running `python`, `py`, `node`, `npm install` and `markitdown`. **This means the studio can run Python and Node commands in this folder without asking you.** The PowerShell rules in that file repeat the Bash rules on purpose, so Windows works the same way. Anything else still asks. When it asks about something in this folder, approving it is fine.
+**Claude Code.** The file `.claude/settings.json` is part of this folder. It pre-allows web search, web page reading, writing and editing files, and running `python`, `py`, `node`, `npm install` and `markitdown`. **On Windows, this means the studio can run Python and Node commands in this folder without asking you.** The PowerShell rules in that file repeat the Bash rules on purpose, so Windows works the same way.
+
+On macOS and Linux, Python commands start with `python3`, which is not on that list. Claude Code asks the first time for each one. Choose "always allow", or add a `python3` rule to your own `.claude/settings.local.json` (not committed), and the prompts stop. Node commands run without asking on every system. Anything else still asks. When it asks about something in this folder, approving it is fine.
 
 **Antigravity.** It asks you to approve each web page the studio reads. That is expected. Commands run in a sandbox.
 
 ## Resume or start over
 
-You can close the session at either gate and come back later. When you type `/prep-class` again with the same topic, the studio reads `status.md` and asks: *Resume from <next step>, or start over?*
+You can close the session at either gate and come back later. When you start again, the studio reads `status.md` first:
+
+- **`/prep-class` on its own:** if a run is in progress, it offers to resume that run.
+- **`/prep-class` with the same topic:** it asks *Resume from <next step>, or start over?*
+- **`/prep-class` with a different topic:** it asks you before archiving the previous run, and only then starts the new one.
 
 Starting over moves every generated file into `archive/<date-time>/` first. Nothing is deleted.
 
 ## Adding a skill
 
-Add one entry to `skill-sources.json` with the skill's `name`, `repo`, `path` and `ref` (a full 40-character commit ID, never a branch name). Then type `/setup-studio`. No code changes are needed.
+Add one entry to `skill-sources.json` with the skill's `name`, `repo`, `path` and `ref` (a full 40-character commit ID, never a branch name). The `name` must equal the `name` in that skill's `SKILL.md`, or `/setup-studio` rejects it. Then type `/setup-studio`. No code changes are needed.
 
 ## Troubleshooting
 
-- **A builder's `node` or `python` command fails in Antigravity.** The sandbox may be blocking it. For that one agent only, open its file in `.agents/agents/` (for example `.agents/agents/slides-builder.md`) and change `commandExecutionPolicy: sandbox` to `commandExecutionPolicy: auto`. Leave every other agent on `sandbox`. This is a local change: `python scripts/check_studio.py` will report that file as different, and `python scripts/sync_agents.py` puts it back to `sandbox`.
+- **A builder's `node` or `python` command fails in Antigravity.** The sandbox may be blocking it. For that one agent only, open its file in `.agents/agents/` (for example `.agents/agents/slides-builder.md`) and change `commandExecutionPolicy: sandbox` to `commandExecutionPolicy: auto`. Leave every other agent on `sandbox`. This is a local change only; do not commit it. `python scripts/check_studio.py` will report that file as different, and `python scripts/sync_agents.py` puts it back to `sandbox`.
 - **`review.md` says the render check was skipped.** LibreOffice is not installed, so the slides were not turned into pictures for a visual check. The deck is still built and checked in other ways. Install LibreOffice if you want the visual check.
-- **The studio stops on a PDF.** Your PDF is probably a scan with no text layer. The studio cannot read it, so it stops. Use a PDF where you can select the text, or run it through OCR first.
+- **The studio stops on a PDF.** Your PDF is probably a scan with no text layer. The studio cannot read it, so it stops and tells you to replace that file with a PDF that has selectable text. Use a text PDF, or run the scan through OCR first.
 - **A skill fails to install.** The `/setup-studio` table shows the manual fix: download the repository at that commit and copy the skill folder into `.claude/skills/<name>/`.
 - **`/prep-class` does not appear.** Start a new session. In the Antigravity CLI, type `/skills reload`.
 
@@ -117,7 +134,7 @@ Add one entry to `skill-sources.json` with the skill's `name`, `repo`, `path` an
 
 - `python scripts/check_studio.py` checks the project structure. `python scripts/check_studio.py --run` also checks a run stopped at Gate 1.
 - `python scripts/test_scripts.py` tests the helper scripts. It prints `ok`.
-- Never hand-edit `.agents/agents/`. Edit `.claude/agents/` and run `python scripts/sync_agents.py`.
+- Never hand-edit `.agents/agents/` (the sandbox fallback is the one local exception). Edit `.claude/agents/` and run `python scripts/sync_agents.py`.
 - The design is in `docs/PREP_CLASS_PRD.md`.
 
 ## Human-verified checklist

@@ -56,7 +56,8 @@ The tags are the `[TB p.N]`, `[WEB-n]` or `[CO-n]` tags of the research bullets 
 - Cite a tag that does not exist in `research/`.
 - Ask a question, add a round heading, or change earlier turns.
 - Write to any file other than `debate.md`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - The latest round in `debate.md` ends with one `**Expert:**` answer of 2 to 6 sentences.

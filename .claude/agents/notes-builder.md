@@ -44,7 +44,8 @@ The only command you may run is `python`, for reportlab and `scripts/pdf_text.py
 - Use Unicode subscript or superscript characters.
 - Add content the plan does not cover.
 - Write any file other than `outputs/student-notes.pdf` and `outputs/.build/notes.py`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `outputs/student-notes.pdf` is A4, 3 to 6 pages, with the six sections in order.

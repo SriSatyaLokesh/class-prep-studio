@@ -79,6 +79,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert r.returncode == 2 and "cannot read" in r.stderr, (r.returncode, r.stderr)
     r = subprocess.run(cc + [tmp], capture_output=True, text=True)
     assert r.returncode == 0 and r.stdout == "", (r.returncode, r.stdout, r.stderr)
+    assert subprocess.run(cc, capture_output=True, text=True).returncode == 2  # usage error
 
 # sync_agents
 from sync_agents import antigravity_text  # noqa: E402

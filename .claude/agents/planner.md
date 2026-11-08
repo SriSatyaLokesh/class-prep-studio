@@ -62,7 +62,8 @@ None found
 - Hide a conflict between sources, or resolve one yourself.
 - Exceed one page (about 600 words).
 - Write any file other than `outputs/plan.md`.
-- Follow every guardrail in AGENTS.md.
+
+Also follow every guardrail in AGENTS.md.
 
 # Done when
 - `outputs/plan.md` has the five sections in order and is about 600 words or fewer.
